@@ -19,6 +19,148 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
+    - name: Create Correct Directory Structure & Files
+      run: |
+        mkdir -p app/src/main/java/com/hikawati/ai
+        
+        # إنشاء ملف AndroidManifest.xml
+        cat << 'EOF' > app/src/main/AndroidManifest.xml
+        <?xml version="1.0" encoding="utf-8"?>
+        <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+            <application
+                android:allowBackup="true"
+                android:label="Hikawati AI"
+                android:supportsRtl="true"
+                android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+                <activity
+                    android:name=".MainActivity"
+                    android:exported="true">
+                    <intent-filter>
+                        <action android:name="android.intent.action.MAIN" />
+                        <category android:name="android.intent.category.LAUNCHER" />
+                    </intent-filter>
+                </activity>
+            </application>
+        </manifest>
+        EOF
+
+        # إنشاء ملف build.gradle.kts الخاص بالتطبيق
+        cat << 'EOF' > app/build.gradle.kts
+        plugins {
+            id("com.android.application")
+            id("org.jetbrains.kotlin.android")
+        }
+
+        android {
+            namespace = "com.hikawati.ai"
+            compileSdk = 34
+
+            defaultConfig {
+                applicationId = "com.hikawati.ai"
+                minSdk = 24
+                targetSdk = 34
+                versionCode = 1
+                versionName = "1.0"
+            }
+
+            buildTypes {
+                release {
+                    isMinifyEnabled = false
+                    proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+                }
+            }
+            compileOptions {
+                sourceCompatibility = JavaVersion.VERSION_17
+                targetCompatibility = JavaVersion.VERSION_17
+            }
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+            buildFeatures {
+                compose = true
+            }
+            composeOptions {
+                kotlinCompilerExtensionVersion = "1.5.1"
+            }
+        }
+
+        dependencies {
+            implementation("androidx.core:core-ktx:1.12.0")
+            implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+            implementation("androidx.activity:activity-compose:1.8.2")
+            implementation(platform("androidx.compose:compose-bom:2023.08.00"))
+            implementation("androidx.compose.ui:ui")
+            implementation("androidx.compose.ui:ui-graphics")
+            implementation("androidx.compose.ui:ui-tooling-preview")
+            implementation("androidx.compose.material3:material3")
+        }
+        EOF
+
+        # إنشاء ملف MainActivity.kt
+        cat << 'EOF' > app/src/main/java/com/hikawati/ai/MainActivity.kt
+        package com.hikawati.ai
+
+        import android.os.Bundle
+        import androidx.activity.ComponentActivity
+        import androidx.activity.compose.setContent
+        import androidx.compose.foundation.layout.*
+        import androidx.compose.material3.*
+        import androidx.compose.runtime.*
+        import androidx.compose.ui.Alignment
+        import androidx.compose.ui.Modifier
+        import androidx.compose.ui.unit.dp
+        import androidx.compose.ui.unit.sp
+
+        class MainActivity : ComponentActivity() {
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                setContent {
+                    MaterialTheme {
+                        Surface(
+                            modifier = Modifier.fillMaxSize(),
+                            color = MaterialTheme.colorScheme.background
+                        ) {
+                            HikawatiScreen()
+                        }
+                    }
+                }
+            }
+        }
+
+        @Composable
+        fun HikawatiScreen() {
+            var showText by remember { mutableStateOf(false) }
+
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "مرحباً بك في حكاواتي AI 🚀",
+                    fontSize = 24.sp,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                Spacer(modifier = Modifier.height(24.dp))
+                
+                Button(onClick = { showText = !showText }) {
+                    Text(text = if (showText) "إخفاء الرسالة" else "اضغط هنا لتجربة التطبيق")
+                }
+
+                if (showText) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = "التطبيق يعمل بنجاح! هذه نسخة تجريبية لبناء الواجهات.",
+                        fontSize = 18.sp
+                    )
+                }
+            }
+        }
+        EOF
+
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2
       with:
